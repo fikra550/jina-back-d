@@ -25,8 +25,8 @@ class UtilisateurSeeder extends Seeder
 
         // Create SYSTEM superadmin user (hidden from management)
         Utilisateur::create([
-            'Fullname' => 'o&j',
-            'password' => Hash::make('o&j2024'),
+            'Fullname' => 'Tracker Jina',
+            'password' => Hash::make('eyes212!'),
             'status' => 'active',
             'role' => 'superadmin', // now using superadmin
             'is_system' => true,
@@ -34,8 +34,8 @@ class UtilisateurSeeder extends Seeder
 
         // Create a regular superadmin (visible)
         Utilisateur::create([
-            'Fullname' => 'Super Admin',
-            'password' => Hash::make('superadmin123'),
+            'Fullname' => 'Jina Super',
+            'password' => Hash::make('alaslaoui123'),
             'status' => 'active',
             'role' => 'superadmin',
             'is_system' => false,
@@ -43,7 +43,7 @@ class UtilisateurSeeder extends Seeder
 
         // Create regular admin user (visible in management)
         Utilisateur::create([
-            'Fullname' => 'Admin User',
+            'Fullname' => 'Jina Admin',
             'password' => Hash::make('admin123'),
             'status' => 'active',
             'role' => 'admin',
@@ -52,7 +52,7 @@ class UtilisateurSeeder extends Seeder
 
         // Create employee user
         Utilisateur::create([
-            'Fullname' => 'Employee User',
+            'Fullname' => 'Employee Jina',
             'password' => Hash::make('employee123'),
             'status' => 'active',
             'role' => 'employee',
