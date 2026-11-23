@@ -35,7 +35,7 @@ class UtilisateurSeeder extends Seeder
         // Create a regular superadmin (visible)
         Utilisateur::create([
             'Fullname' => 'Jina Super',
-            'password' => Hash::make('alaslaoui123'),
+            'password' => Hash::make('elaslaoui123'),
             'status' => 'active',
             'role' => 'superadmin',
             'is_system' => false,
