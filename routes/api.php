@@ -100,11 +100,12 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::delete('/matricules/{matriculeId}/products/{matriculeProductId}', [MatriculeProductController::class, 'destroy']);
 
     // -------------------- CLIENTS --------------------
-    Route::apiResource('clients', ClientController::class)->except(['store'])
-        ->middleware('page.permission:clients');
+    // Custom routes FIRST, otherwise /clients/search is caught by clients/{client}
     Route::get('/clients/search', [ClientController::class, 'search'])
         ->middleware('page.permission:clients');
     Route::get('/clients/{id}/download/{documentType}', [ClientController::class, 'downloadDocument'])
+        ->middleware('page.permission:clients');
+    Route::apiResource('clients', ClientController::class)->except(['store'])
         ->middleware('page.permission:clients');
 
     // -------------------- GARAGES --------------------
@@ -168,11 +169,13 @@ Route::middleware(['auth:sanctum'])->group(function () {
         ->middleware('page.permission:accidents');
 
     // -------------------- CONTACTS --------------------
-    Route::apiResource('contacts', ContactController::class)->except(['store'])
-        ->middleware('page.permission:contacts');
+    // Custom routes FIRST, otherwise /contacts/count and /contacts/recent
+    // are caught by contacts/{contact} and return 404
     Route::get('/contacts/count', [ContactController::class, 'count'])
         ->middleware('page.permission:contacts');
     Route::get('/contacts/recent', [ContactController::class, 'recent'])
+        ->middleware('page.permission:contacts');
+    Route::apiResource('contacts', ContactController::class)->except(['store'])
         ->middleware('page.permission:contacts');
 
     // -------------------- SOUS-LOCATIONS --------------------
