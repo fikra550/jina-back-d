@@ -32,6 +32,7 @@ public function getPages(): JsonResponse
         'garages'        => 'Garages',
         'sous-locations' => 'Sous-locations',
         'lavage'         => 'Lavage',
+        'laveurs'        => 'Laveurs',
         'products'       => 'Produits',
     ];
     return response()->json(['pages' => $pages]);
@@ -58,7 +59,7 @@ public function getPages(): JsonResponse
 
         $validated = $request->validate([
             'user_id'         => 'required|exists:utilisateurs,id',
-            'page_slug' => 'required|string|in:cars,matricules,clients,reservations,accidents,payments,users,contacts,reports,garages,sous-locations,lavage,products',
+            'page_slug' => 'required|string|in:cars,matricules,clients,reservations,accidents,payments,users,contacts,reports,garages,sous-locations,lavage,laveurs,products',
             'duration_minutes'=> 'nullable|integer|min:1|max:43200',
         ]);
 

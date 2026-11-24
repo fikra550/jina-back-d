@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Lavage;
+use App\Models\Laveur;
 use App\Models\LavageProduct;
 use App\Models\Matricule;
 use App\Models\Product;
@@ -21,7 +22,7 @@ class LavageController extends Controller
     /** Relations renvoyées après chaque action (le front remplace la ligne entière). */
     private const FULL = [
         'matricule.car', 'car', 'client', 'reservation',
-        'assignedUser', 'lavageProducts.product',
+        'assignedUser', 'laveur', 'lavageProducts.product',
     ];
 
     /* =====================================================
@@ -33,7 +34,7 @@ class LavageController extends Controller
 
         $lavages = Lavage::with([
             'matricule.car', 'car', 'client', 'reservation',
-            'assignedUser', 'lavageProducts.product',
+            'assignedUser', 'laveur', 'lavageProducts.product',
         ])
             ->orderBy('date_lavage', 'desc')
             ->orderBy('id', 'desc')
@@ -88,6 +89,8 @@ class LavageController extends Controller
             'payment_status'           => 'sometimes|in:paid,unpaid,partial',
             'amount_paid'              => 'sometimes|numeric|min:0',
             'washer_name'              => 'nullable|string|max:255',
+            'laveur_id'                => 'nullable|exists:laveurs,id',
+            'vehicle_plate'            => 'nullable|string|max:50',
             'assigned_to'              => 'nullable|exists:utilisateurs,id',
             'bay'                      => 'nullable|string|max:50',
             'vehicle_condition_before' => 'nullable|string',
@@ -101,6 +104,9 @@ class LavageController extends Controller
         ]);
 
         $validated['created_by'] = $this->currentUserName();
+
+        // Laveur: copy the name + compute what the laveur earns on this lavage
+        $this->applyLaveur($validated);
 
         // Auto-fill car_id from matricule
         if (!empty($validated['matricule_id']) && empty($validated['car_id'])) {
@@ -198,7 +204,7 @@ class LavageController extends Controller
 
         $lavage = Lavage::with([
             'matricule.car', 'car', 'client', 'reservation',
-            'assignedUser', 'lavageProducts.product',
+            'assignedUser', 'laveur', 'lavageProducts.product',
         ])->findOrFail($id);
 
         $lavage->photos_before_urls = $lavage->photos_before_urls;
@@ -235,6 +241,8 @@ class LavageController extends Controller
             'payment_status'           => 'sometimes|in:paid,unpaid,partial',
             'amount_paid'              => 'sometimes|numeric|min:0',
             'washer_name'              => 'nullable|string|max:255',
+            'laveur_id'                => 'nullable|exists:laveurs,id',
+            'vehicle_plate'            => 'nullable|string|max:50',
             'assigned_to'              => 'nullable|exists:utilisateurs,id',
             'bay'                      => 'nullable|string|max:50',
             'vehicle_condition_before' => 'nullable|string',
@@ -307,6 +315,9 @@ class LavageController extends Controller
                 ? 'unpaid'
                 : ($paid >= $finalPrice ? 'paid' : 'partial');
         }
+
+        // Laveur: copy the name + (re)compute earnings when laveur or price changed
+        $this->applyLaveur($validated, $lavage);
 
         $productsData = $validated['products'] ?? null;
         unset($validated['products']);
@@ -440,6 +451,10 @@ class LavageController extends Controller
 
         if (isset($validated['vehicle_condition_after'])) $lavage->vehicle_condition_after = $validated['vehicle_condition_after'];
         if (isset($validated['photos_after']))            $lavage->photos_after            = $validated['photos_after'];
+
+        if ($lavage->laveur_id && $lavage->laveur_amount === null) {
+            $lavage->laveur_amount = $this->laveurAmount((int) $lavage->laveur_id, (float) $lavage->price);
+        }
 
         $lavage->completeNow();
         $lavage->save();
@@ -754,6 +769,46 @@ class LavageController extends Controller
                 'created_by'  => $this->currentUserName(),
             ]);
         }
+    }
+
+    /**
+     * Fill washer_name (copy of the laveur's name) and laveur_amount
+     * (what the laveur earns) on the data about to be saved.
+     *
+     * The amount is only recomputed when the laveur or the price changed,
+     * so changing a laveur's rate later does not rewrite old lavages.
+     */
+    private function applyLaveur(array &$data, ?Lavage $lavage = null): void
+    {
+        $hasKey   = array_key_exists('laveur_id', $data);
+        $laveurId = $hasKey ? $data['laveur_id'] : $lavage?->laveur_id;
+
+        if (!$laveurId) {
+            if ($hasKey) $data['laveur_amount'] = null; // laveur removed
+            return;
+        }
+
+        $price = (float) ($data['price'] ?? $lavage?->price ?? 0);
+
+        $laveurChanged = $lavage === null || (int) $laveurId !== (int) $lavage->laveur_id;
+        $priceChanged  = $lavage !== null
+            && array_key_exists('price', $data)
+            && abs($price - (float) $lavage->price) > 0.001;
+
+        if ($laveurChanged || $priceChanged || $lavage->laveur_amount === null) {
+            $data['laveur_amount'] = $this->laveurAmount((int) $laveurId, $price);
+        }
+
+        if ($laveurChanged) {
+            $laveur = Laveur::find($laveurId);
+            if ($laveur) $data['washer_name'] = $laveur->name;
+        }
+    }
+
+    private function laveurAmount(int $laveurId, float $price): float
+    {
+        $laveur = Laveur::find($laveurId);
+        return $laveur ? $laveur->computeAmount($price) : 0.0;
     }
 
     /**

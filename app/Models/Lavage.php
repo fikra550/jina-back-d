@@ -15,7 +15,8 @@ class Lavage extends Model
         'price', 'subtotal', 'discount_amount', 'tva_amount',
         'status', 'payment_status', 'amount_paid', 'payment_history',
         'photos_before', 'photos_after',
-        'washer_name', 'assigned_to', 'bay',
+        'vehicle_plate',
+        'laveur_id', 'washer_name', 'laveur_amount', 'assigned_to', 'bay',
         'vehicle_condition_before', 'vehicle_condition_after',
         'rating', 'feedback',
         'notes', 'created_by',
@@ -28,6 +29,7 @@ class Lavage extends Model
         'discount_amount'  => 'float',
         'tva_amount'       => 'float',
         'amount_paid'      => 'float',
+        'laveur_amount'    => 'float',
         'services'         => 'array',
         'payment_history'  => 'array',
         'photos_before'    => 'array',
@@ -55,6 +57,7 @@ class Lavage extends Model
     public function client()       { return $this->belongsTo(Client::class); }
     public function reservation()  { return $this->belongsTo(Reservation::class); }
     public function assignedUser() { return $this->belongsTo(Utilisateur::class, 'assigned_to'); }
+    public function laveur()       { return $this->belongsTo(Laveur::class); }
 
     public function lavageProducts() { return $this->hasMany(LavageProduct::class); }
     public function products()

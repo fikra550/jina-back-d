@@ -16,6 +16,7 @@ use App\Http\Controllers\AdminPermissionController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\SousLocationController;
 use App\Http\Controllers\LavageController;
+use App\Http\Controllers\LaveurController;
 use App\Http\Controllers\ProductController;
 use App\Http\Controllers\ProductCategoryController;
 
@@ -260,6 +261,14 @@ Route::middleware(['auth:sanctum'])->group(function () {
     Route::post('/lavages/{id}/add-products', [LavageController::class, 'addProducts'])
         ->middleware('page.permission:lavage');
     Route::post('/lavages/{id}/remove-product', [LavageController::class, 'removeProduct'])
+        ->middleware('page.permission:lavage');
+
+    // -------------------- LAVEURS (washers + their pay) --------------------
+    Route::post('/laveurs/{id}/payments', [LaveurController::class, 'addPayment'])
+        ->middleware('page.permission:lavage');
+    Route::delete('/laveurs/{id}/payments/{paymentId}', [LaveurController::class, 'removePayment'])
+        ->middleware('page.permission:lavage');
+    Route::apiResource('laveurs', LaveurController::class)
         ->middleware('page.permission:lavage');
 });
 
