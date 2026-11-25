@@ -473,14 +473,15 @@ class AccidentController extends Controller
     private function getCompanyInfo()
     {
         return [
-            'name' => 'SMAITI CAR',
-            'address' => 'BASSATINE AL OULFA GH 3 IMMEUBLE 14 N°56 AL OULFA - CASABLANCA',
-            'rc' => '459659',
-            'if' => '45640901',
-            'tp' => '30351369',
-            'icc' => '002464789000069',
-            'tel' => '0665 92 19 21 / 0660 47 28 40',
-            'email' => 'smaiticar2@gmail.com'
+            'name' => 'JINA BUSINESS',
+            'address' => 'LOT ERRACHAD N° 706 TR 02 MAG 01 MEDIOUNA, CASABLANCA - Maroc',
+            'rc' => '624023',
+            'if' => '65912528',
+            'tp' => '37701443',
+            'cnss' => '5317601',
+            'ice' => '003478448000020',
+            'tel' => '06 63 04 95 75 - 06 67 47 47 45',
+            'email' => 'jinabusiness0@gmail.com'
         ];
     }
 
